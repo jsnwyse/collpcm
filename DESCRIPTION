@@ -1,0 +1,15 @@
+Package: collpcm
+Version: 1.0
+Type: Package
+Title: Collapsed Latent Position Cluster Model for Social Networks
+Version: 1.0
+Date: 2017-02-24
+Authors@R: c( person( "Jason", "Wyse", email = "wyseja@tcd.ie", role = c( "aut", "cre" ) ), person( "Caitriona", "Ryan", email = "Caitriona.Ryan@ul.ie", role = c( "aut", "ctb" ) ) )
+Description: Bayesian model selection in collapsed latent position cluster models for social networks.
+Depends: R (>= 2.10), vegan, network, latentnet
+License: GPL-3
+Maintainer: Jason Wyse <wyseja@tcd.ie>
+NeedsCompilation: yes
+Packaged: 2017-02-24 16:41:18 UTC; jason
+Author: Jason Wyse [aut, cre],
+  Caitriona Ryan [aut, ctb]

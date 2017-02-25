@@ -1,0 +1,21 @@
+useDynLib(collpcm)
+
+#exportPattern("*")
+
+# Import all packages listed as Imports or Depends
+
+import( network ) 
+importFrom( vegan, procrustes )
+importFrom( latentnet, ergmm.drawpie )
+importFrom( graphics, par, plot, points, polygon, symbols, axis  )
+importFrom( stats, dist, optim, rbinom, rnorm, dpois )
+importFrom( utils, data )
+
+S3method(plot,collpcm)
+S3method(print,collpcm)
+S3method(summary,collpcm)
+
+export( collpcm.control )
+export( collpcm.summaryplot )
+export( collpcm.fit )
+
