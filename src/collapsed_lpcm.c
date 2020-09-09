@@ -1,24 +1,39 @@
 #include "required_libs.h"
 #include "GaussianMixtureModel.h"
 #include "NetworkLib.h"
+#include "Polya_gamma_rng.h"
 #include "cat.h"
-
 
 //function decls
 
-void collapsed_get_expected_Y( int *n, int *d, int *sample, int *dir, double *ExY, double *beta, double *latentpos );
+//void collapsed_get_expected_Y( int *n, int *d, int *sample, int *dir, double *ExY, double *beta, double *latentpos );
 
-void Relabel(int *n_obs,int *n_sample,int *n_groups,int *labels_in,int *labels_out) ;
+static void collapsed_lpcm( int *Y, int *nnodes, int *dimlatent, int *ncovariates, double *covariates, int *directed, int *maxgroups, int *initgroups, int *sample, int *burn, int *interval, int *modelsearch, double *hyparams, double *log_prior_groups, double *prparams, double *initparams, double *initialpositions, int *return_allocations, double *return_latent_positions, double *return_abundance, int *return_ngroups, double *return_llike, double *return_theta, double *return_delta, double *return_kappa, double *accrt_latent_positions,double *accrt_abundance, double *accrt_metmoves, double *accrt_ejectabsorb, double *accrt_theta, int *nthread, int *update_gamma, int *update_kappa, int *npilot, int *store_sparse, int *adapt, int *adapt_int, int *bradley_terry, int *verbose );
 
-void collapsed_lpcm( int *Y, int *nnodes, int *dimlatent, int *ncovariates, double *covariates, int *directed, int *maxgroups, int *initgroups, int *sample, int *burn, int *interval, int *modelsearch, double *hyparams, double *log_prior_groups, double *prparams, double *initparams, double *initialpositions, int *return_allocations, double *return_latent_positions, double *return_abundance, int *return_ngroups, double *return_llike, double *return_theta, double *return_delta, double *return_kappa, double *accrt_latent_positions,double *accrt_abundance, double *accrt_metmoves, double *accrt_ejectabsorb, double *accrt_theta, int *nthread, int *update_gamma, int *update_kappa, int *npilot, int *store_sparse, int *adapt, int *adapt_int, int *bradley_terry, int *verbose );
+static void Relabel( int *n_obs, int *n_sample, int *n_groups, int *labels_in, int *labels_out, int *permutation) ;
+
+static void simulate_random_polya_gamma( int *n, double *w, double *x, int *stop) ;
+  
 
 //void collapsed_lpcm_MLE_distances( int *Y, int *nnodes, int *directed, double *dist, double *beta );
 
+static const R_CMethodDef cMethods[] = {
+	{"collapsed_lpcm", (DL_FUNC) &collapsed_lpcm, 39},
+	{"Relabel", (DL_FUNC) &Relabel, 6},
+	{"simulate_random_polya_gamma", (DL_FUNC) &simulate_random_polya_gamma, 4},
+	NULL
+};
 
-void collapsed_lpcm( int *Y, int *nnodes, int *dimlatent, int *ncovariates, double *covariates, int *directed, int *maxgroups, int *initgroups, int *sample, int *burn, int *interval, int *modelsearch, double *hyparams, double *log_prior_groups, double *prparams, double *initparams, double *initialpositions, int *return_allocations, double *return_latent_positions, double *return_abundance, int *return_ngroups, double *return_llike, double *return_theta, double *return_delta, double *return_kappa, double *accrt_latent_positions,double *accrt_abundance, double *accrt_metmoves, double *accrt_ejectabsorb, double *accrt_theta, int *nthread, int *update_gamma, int *update_kappa, int *npilot, int *store_sparse, int *adapt, int *adapt_int, int *bradley_terry, int *verbose )
+void R_init_collpcm( DllInfo *info )
+{
+	R_registerRoutines( info, cMethods, NULL, NULL, NULL );
+	R_useDynamicSymbols( info, FALSE );
+}
+
+static void collapsed_lpcm( int *Y, int *nnodes, int *dimlatent, int *ncovariates, double *covariates, int *directed, int *maxgroups, int *initgroups, int *sample, int *burn, int *interval, int *modelsearch, double *hyparams, double *log_prior_groups, double *prparams, double *initparams, double *initialpositions, int *return_allocations, double *return_latent_positions, double *return_abundance, int *return_ngroups, double *return_llike, double *return_theta, double *return_delta, double *return_kappa, double *accrt_latent_positions,double *accrt_abundance, double *accrt_metmoves, double *accrt_ejectabsorb, double *accrt_theta, int *nthread, int *update_gamma, int *update_kappa, int *npilot, int *store_sparse, int *adapt, int *adapt_int, int *bradley_terry, int *verbose )
 {
 	
-	int i,j,it,actori,s,fixedG=1-*modelsearch;
+	int i,j,it,actori,fixedG=1-*modelsearch;
 	double tinit, lps;
 	
 	int nburn = *burn, niterations = (*sample) * (*interval) + (*burn) ;
@@ -35,18 +50,19 @@ void collapsed_lpcm( int *Y, int *nnodes, int *dimlatent, int *ncovariates, doub
 	
 	double *prior_hparams,*tc;
 	
-	prior_hparams = calloc(4,sizeof(double));
-	tc = calloc(2,sizeof(double));
+	prior_hparams = (double *)calloc(4,sizeof(double));
+	tc = (double *)calloc(2,sizeof(double));
 	
 	//setstartime(tc);
 	
 	//cross reference with other code
 	double sigmab = prparams[0], sigmaz = prparams[1], 
-		   bcur = initparams[0], thetainit = initparams[1];
+		   bcur = initparams[0] ;//, thetainit = initparams[1];
 	
-	double *thetainitpar = calloc( 2, sizeof(double) );
+	double *thetainitpar = (double *)calloc( 2, sizeof(double) );
 	
-	if(*ncovariates == 0){
+	if(*ncovariates == 0)
+	{
 		tinit = 0.;
 	}else{
 		tinit = initparams[1];
@@ -61,12 +77,14 @@ void collapsed_lpcm( int *Y, int *nnodes, int *dimlatent, int *ncovariates, doub
 	
 	initresy( yres, *ncovariates );
 	
-	if(ncovariates > 0){
+	if(*ncovariates > 0)
+	
+	{
 	//	put_covariates(covariates,network);
 	}
 
-	int *Gcount;
-	Gcount = calloc(*maxgroups,sizeof(int));
+	//int *Gcount;
+	//Gcount = (int *)calloc(*maxgroups,sizeof(int));
 	
 	nw->pmix->gamma = hyparams[2];
 	nw->pmix->delta = hyparams[3];
@@ -74,13 +92,13 @@ void collapsed_lpcm( int *Y, int *nnodes, int *dimlatent, int *ncovariates, doub
 	nw->pmix->kappa = 1./hyparams[5];
 
 
-	if( *ncovariates > 0 ){
+	if( *ncovariates > 0 )
+	{
 
 	}
 	
-	for(j=0;j<nw->pmix->d;j++){
-		nw->pmix->prior_mu[j] = 0.;
-	}
+	for(j=0;j<nw->pmix->d;j++) nw->pmix->prior_mu[j] = 0.;
+
 	nw->pmix->xi2 = 0.;
 	
 	nw->pmix->update_gamma = FALSE;
@@ -102,17 +120,19 @@ void collapsed_lpcm( int *Y, int *nnodes, int *dimlatent, int *ncovariates, doub
 	
 	double accrt, del, Del;
 	
-	int *order = calloc( *nnodes, sizeof(int) );
+	int *order = (int *)calloc( *nnodes, sizeof(int) );
 	
 	if( *verbose ) Rprintf("\n\t Starting MCMC iterations... ");
 	
-	for( it=0; it<niterations + *npilot; it++){
+	for( it=0; it<niterations + *npilot; it++)
+	{
 	
 		R_CheckUserInterrupt(); 
 	
 		if( !(*bradley_terry) )	betaupdate( nw, yres, it, nburn, 1.);
 		
-		if(*ncovariates > 0){
+		if(*ncovariates > 0)
+		{
 			//do update of the covariates
 			//for(s=0;s<*ncovariates;s++)
 			//	thetaupdate(network,yres,it,nburn,1.,s);
@@ -158,11 +178,13 @@ void collapsed_lpcm( int *Y, int *nnodes, int *dimlatent, int *ncovariates, doub
 		if( *verbose && it == *npilot ) Rprintf("\n\t Starting burn in iterations...");
 		if( *verbose && it == nburn  + *npilot - 1 ) Rprintf("\n\t Finished burn in iterations...");
 		
-		if( it > nburn + *npilot - 1 ){
+		if( it > nburn + *npilot - 1 )
+		{
 			
 			jp = it-nburn-*npilot+1;
 		
-			if(jp%(*interval) == 0){
+			if(jp%(*interval) == 0)
+			{
 			
 				if( *verbose && (jp/(*interval)-1)%1000 == 0 && jp/(*interval)-1 > 0 ) 
 					Rprintf("\n\t Finished sample %d... ", jp/(*interval)-1 );
@@ -178,21 +200,26 @@ void collapsed_lpcm( int *Y, int *nnodes, int *dimlatent, int *ncovariates, doub
 					return_delta[ jp/(*interval)-1] = nw->pmix->gamma;
 					return_kappa[ jp/(*interval)-1] = nw->pmix->kappa;
 					
-					for(i=0;i<nw->n;i++){
+					for(i=0;i<nw->n;i++)
+					{
 						return_allocations[(jp/(*interval)-1)*nw->n + i] = nw->pmix->z[i];
 						//printf(" %d ",network->pmix->z[i]);
 					}
 					//printf("\n");
-					for(i=0;i<nw->n;i++){
-						for(j=0;j<nw->pmix->d;j++){
+					for(i=0;i<nw->n;i++)
+					{
+						for(j=0;j<nw->pmix->d;j++)
+						{
 							if( nw->pmix->d > 1 ) lps = nw->pmix->Y[i][j]; else lps = nw->pmix->y_uni[i]; 
 							return_latent_positions[(jp/(*interval)-1)*( (*dimlatent)*nw->n) + (*dimlatent)*i + j] = lps;
 						}
 					}
 				
-					if(*ncovariates>0){
+					if(*ncovariates>0)
+					{
 						//store the values of the covariates
-						for(i=0;i<*ncovariates;i++){
+						for(i=0;i<*ncovariates;i++)
+						{
 							return_theta[(jp/(*interval)-1)*(*ncovariates) + i] = nw->theta[i];
 						}
 					}
@@ -259,9 +286,258 @@ void collapsed_lpcm( int *Y, int *nnodes, int *dimlatent, int *ncovariates, doub
 	return;
 }
 
+static void collapsed_quantile_lpcm( int *Y, int *nnodes, int *dimlatent, int *ncovariates, double *covariates, int *directed, int *maxgroups, int *initgroups, int *sample, int *burn, int *interval, int *modelsearch, double *hyparams, double *log_prior_groups, double *prparams, double *initparams, double *initialpositions, int *return_allocations, double *return_latent_positions, double *return_abundance, int *return_ngroups, double *return_llike, double *return_theta, double *return_delta, double *return_kappa, double *accrt_latent_positions,double *accrt_abundance, double *accrt_metmoves, double *accrt_ejectabsorb, double *accrt_theta, int *nthread, int *update_gamma, int *update_kappa, int *npilot, int *store_sparse, int *adapt, int *adapt_int, int *bradley_terry, int *verbose )
+{
+  
+  int i,j,it,actori,fixedG=1-*modelsearch;
+  double tinit, lps;
+  
+  int nburn = *burn, niterations = (*sample) * (*interval) + (*burn) ;
+  
+  struct results *results;
+  
+  struct resy *yres;
+  
+  results = (struct results *)malloc(sizeof(struct results));
+  
+  struct network *nw = network_create( *nnodes, *dimlatent, *ncovariates, *directed, *maxgroups, *initgroups, *bradley_terry  );	
+  
+  yres = (struct resy *)malloc(sizeof(struct resy));
+  
+  double *prior_hparams,*tc;
+  
+  prior_hparams = (double *)calloc(4,sizeof(double));
+  tc = (double *)calloc(2,sizeof(double));
+  
+  //setstartime(tc);
+  
+  //cross reference with other code
+  double sigmab = prparams[0], sigmaz = prparams[1], 
+                                                bcur = initparams[0] ;//, thetainit = initparams[1];
+  
+  double *thetainitpar = (double *)calloc( 2, sizeof(double) );
+  
+  if(*ncovariates == 0){
+    tinit = 0.;
+  }else{
+    tinit = initparams[1];
+  }
+  
+  prior_hparams[0] = hyparams[0]; prior_hparams[1] = hyparams[1];
+  prior_hparams[2] = 0.; prior_hparams[3] = 1.; //the last two are for covariates.. ignore for now. 
+  
+  network_initialize( nw, Y, bcur, thetainitpar, prior_hparams,  sigmab, sigmaz, thetainitpar, initialpositions, log_prior_groups );
+  
+  allocate_results( results, niterations, nburn, *nnodes );
+  
+  initresy( yres, *ncovariates );
+  
+  if(*ncovariates > 0){
+    //	put_covariates(covariates,network);
+  }
+  
+  //int *Gcount;
+  //Gcount = (int *)calloc(*maxgroups,sizeof(int));
+  
+  nw->pmix->gamma = hyparams[2];
+  nw->pmix->delta = hyparams[3];
+  nw->pmix->alpha = hyparams[4];
+  nw->pmix->kappa = 1./hyparams[5];
+  
+  
+  if( *ncovariates > 0 ){
+    
+  }
+  
+  for(j=0;j<nw->pmix->d;j++){
+    nw->pmix->prior_mu[j] = 0.;
+  }
+  nw->pmix->xi2 = 0.;
+  
+  nw->pmix->update_gamma = FALSE;
+  
+  initialize_simple( nw->pmix, *initgroups );
+  
+  nw->llike = llike_full( nw );
+  
+  nw->pmix->update_kappa = *update_kappa;
+  nw->pmix->update_gamma = *update_gamma;
+  nw->pmix->update_prior_mu = FALSE;
+  
+  set_prior_hyperparameters_x( nw->pmix, hyparams[2], 1./hyparams[5] ) ;
+  
+  //enable random sampling from R
+  GetRNGstate();
+  
+  int jp; 
+  
+  double accrt, del, Del;
+  
+  int *order = (int *)calloc( *nnodes, sizeof(int) );
+  
+  if( *verbose ) Rprintf("\n\t Starting MCMC iterations... ");
+  
+  for( it=0; it<niterations + *npilot; it++){
+    
+    R_CheckUserInterrupt(); 
+    
+    if( !(*bradley_terry) )	betaupdate( nw, yres, it, nburn, 1.);
+    
+    if(*ncovariates > 0){
+      //do update of the covariates
+      //for(s=0;s<*ncovariates;s++)
+      //	thetaupdate(network,yres,it,nburn,1.,s);
+    }
+    
+    //update of actor positions 
+    
+    for( i=0; i<*nnodes; i++ ) order[i] = i;
+    random_ranshuffle( order, nw->n );
+    
+    for( actori=0; actori<nw->n; actori++ )
+    {
+      zupdatemh( nw, yres, order[actori], it, nburn, 1. );
+    }
+    
+    //adaptive proposals
+    
+    if( *adapt && it < nburn && ( it % (*adapt_int) == 0 ) )
+    {
+      
+      //adapt the proposal variances here
+      
+      del =  1./sqrt( it ) ;
+      Del = del < .01 ? del : .01 ;
+      
+      //beta
+      accrt = (double) yres->accepted_beta / yres->proposed_beta ;
+      
+      if( accrt > .234 ) nw->sigmab *= exp( Del ) ; else nw->sigmab *= exp( -Del ) ;
+      
+      //z update
+      
+      accrt = (double) yres->accepted_z / yres->proposed_z ;
+      
+      if( accrt > .234 ) nw->sigmaz *= exp( Del ) ; else nw->sigmaz *= exp( -Del ) ;
+      
+    }
+    
+    if( it > (int)(.5*nburn) ) fixedG = 1-*modelsearch;  else fixedG = TRUE ; 
+    
+    do_mixmod_analysis_one_sweep( results, nw->pmix, fixedG, it );
+    
+    if( *verbose && it == *npilot ) Rprintf("\n\t Starting burn in iterations...");
+    if( *verbose && it == nburn  + *npilot - 1 ) Rprintf("\n\t Finished burn in iterations...");
+    
+    if( it > nburn + *npilot - 1 ){
+      
+      jp = it-nburn-*npilot+1;
+      
+      if(jp%(*interval) == 0){
+        
+        if( *verbose && (jp/(*interval)-1)%1000 == 0 && jp/(*interval)-1 > 0 ) 
+          Rprintf("\n\t Finished sample %d... ", jp/(*interval)-1 );
+        
+        //record beta and latent positions
+        
+        return_ngroups[jp/(*interval)-1] = nw->pmix->G;
+        
+        if( !(*store_sparse) )
+        {
+          
+          return_abundance[jp/(*interval)-1] = nw->beta;
+          return_delta[ jp/(*interval)-1] = nw->pmix->gamma;
+          return_kappa[ jp/(*interval)-1] = nw->pmix->kappa;
+          
+          for(i=0;i<nw->n;i++){
+            return_allocations[(jp/(*interval)-1)*nw->n + i] = nw->pmix->z[i];
+            //printf(" %d ",network->pmix->z[i]);
+          }
+          //printf("\n");
+          for(i=0;i<nw->n;i++){
+            for(j=0;j<nw->pmix->d;j++){
+              if( nw->pmix->d > 1 ) lps = nw->pmix->Y[i][j]; else lps = nw->pmix->y_uni[i]; 
+              return_latent_positions[(jp/(*interval)-1)*( (*dimlatent)*nw->n) + (*dimlatent)*i + j] = lps;
+            }
+          }
+          
+          if(*ncovariates>0){
+            //store the values of the covariates
+            for(i=0;i<*ncovariates;i++){
+              return_theta[(jp/(*interval)-1)*(*ncovariates) + i] = nw->theta[i];
+            }
+          }
+          
+          return_llike[jp/(*interval)-1] = nw->llike;
+          //Rprintf("\n Likcur %lf ", network->likcur );
+          
+        }
+        
+        
+      }
+      
+    }
+    
+    if( it == nburn + *npilot - 1 )
+    {
+      //reset all of the acceptance counters after pilot and burnin
+      yres->accepted_z = 0;
+      yres->proposed_z = 0;
+      results->accepted_eject = 0;
+      results->proposed_eject = 0;
+      results->accepted_absorb = 0;
+      results->proposed_absorb = 0;
+      results->accepted_m1 = 0;
+      results->proposed_m1 = 0;
+      results->accepted_m2 = 0;
+      results->proposed_m2 = 0;
+      results->accepted_m3 = 0;
+      results->proposed_m3 = 0;
+    }
+    
+  }
+  
+  if( *verbose ) Rprintf("\n\t Finished MCMC...") ; 
+  
+  PutRNGstate();
+  
+  //store the acc rates
+  *accrt_latent_positions =100.*(double)yres->accepted_z/((double)yres->proposed_z);
+  *accrt_abundance = 100.*(double)yres->accepted_beta/((double)yres->proposed_beta);
+  if(*ncovariates>0){
+    for(i=0;i<*ncovariates;i++){
+      //accrt_theta[i] = 100.*(double)yres->accepted_theta[i]/(*niterations);
+    }
+  }
+  accrt_ejectabsorb[0] = 100.*(double)results->accepted_eject/results->proposed_eject;
+  accrt_ejectabsorb[1] = 100.*(double)results->accepted_absorb/results->proposed_absorb;
+  accrt_metmoves[0] = 100.*(double)results->accepted_m1/results->proposed_m1;
+  accrt_metmoves[1] = 100.*(double)results->accepted_m2/results->proposed_m2;
+  accrt_metmoves[2] = 100.*(double)results->accepted_m3/results->proposed_m3;
+  
+  prparams[0] = nw->sigmab * nw->sigmab;
+  prparams[1] = nw->sigmaz * nw->sigmaz;
+  
+  free_results(results,niterations,nburn);
+  free(results);
+  free(yres);
+  network_destroy( nw );
+  free(prior_hparams);
+  free( thetainitpar );
+  free( order );
+  free(tc);
+  
+  return;
+}
+
+
+
+
+
+
 //label switching algorithm
 
-void Relabel(int *n_obs,int *n_sample,int *n_groups,int *labels_in,int *labels_out)
+static void Relabel( int *n_obs, int *n_sample, int *n_groups, int *labels_in, int *labels_out, int *permutation )
 {
 
 	int n,g,**raw,**relab,**summary,
@@ -308,6 +584,10 @@ void Relabel(int *n_obs,int *n_sample,int *n_groups,int *labels_in,int *labels_o
 	}
 	
 
+	for(i=1;i<g+1;i++){
+		permutation[(i-1)*N + 0] = i; //this is the identity mapping as nothing done.
+	}
+
 	for(t=2;t<N+1;t++){
 
 	/*row t*/
@@ -337,6 +617,11 @@ void Relabel(int *n_obs,int *n_sample,int *n_groups,int *labels_in,int *labels_o
 		
 		assct(g,cost,lab,&T);
 
+		/*store the permutation*/
+		for(i=1;i<g+1;i++){
+			permutation[ (i-1)*N + (t-1) ] = lab[i];
+		}
+
 		/*relabel based on output from assct*/
 		/*update the summary matrix*/
 		for(i=1;i<n+1;i++){
@@ -362,7 +647,21 @@ void Relabel(int *n_obs,int *n_sample,int *n_groups,int *labels_in,int *labels_o
 	return;
 }
 
-void collapsed_get_expected_Y( int *n, int *d, int *sample, int *dir, double *ExY, double *beta, double *latentpos )
+static void simulate_random_polya_gamma( int *n, double *w, double *x, int *stop)
+{
+  int i;
+  double r;
+  for( i=0; i<*n; i++ ) 
+  {
+    r = r_Polya_gamma(1,w[i]);
+    if( r < 0.0 ){ *stop=1; return; } else x[i] = r;
+  }
+  return;
+}
+
+
+
+/*void collapsed_get_expected_Y( int *n, int *d, int *sample, int *dir, double *ExY, double *beta, double *latentpos )
 {
 
 	int iter, i, j, k;
@@ -405,4 +704,4 @@ void collapsed_get_expected_Y( int *n, int *d, int *sample, int *dir, double *Ex
 	free( lpos );
 
 	return;
-}
+}*/

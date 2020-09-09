@@ -52,10 +52,6 @@ Jason Wyse
 Ryan, C., Wyse, J. and Friel, N. (2016)
  \emph{Bayesian model selection for the latent position cluster model for Social Networks.} 
  Network Science (accepted).
- 
-  Handcock, M. S., Raftery, A. E. and Tantrum, J. (2007)
- \emph{Model-Based Clustering for Social Networks.} 
- Journal of the Royal Statistical Society, Series A, Vol. 170, 301-354.
 }
 
 

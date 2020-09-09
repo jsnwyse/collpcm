@@ -1,4 +1,3 @@
-//gsl is required
 
 #ifndef _REQUIRED_LIBS_H_
 #define _REQUIRED_LIBS_H_
@@ -12,39 +11,21 @@
 
 #include <R.h>
 #include <Rmath.h>
-
-//openmp
-
-//#include <omp.h>
+#include <R_ext/Rdynload.h>
 
 #include "atable.h"
 
-//gsl
-
-/*#include <gsl/gsl_types.h>
-#include <gsl/gsl_blas.h>
-#include <gsl/gsl_cdf.h>
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_integration.h>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_multifit_nlin.h>
-#include <gsl/gsl_pow_int.h>
-#include <gsl/gsl_randist.h>
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_roots.h>
-#include <gsl/gsl_spline.h>
-#include <gsl/gsl_interp.h>
-#include <gsl/gsl_statistics.h>
-#include <gsl/gsl_sf.h>
-#include <gsl/gsl_sys.h>
-#include <gsl/gsl_vector.h>
-#include <gsl/gsl_eigen.h>
-#include <gsl/gsl_sf_psi.h>
-#include <gsl/gsl_linalg.h>
-#include <gsl/gsl_sort.h>
-#include <gsl/gsl_sort_vector.h>
-#include <gsl/gsl_multimin.h>*/
+// define the constants
+#define TRUE 1
+#define FALSE 0
+#define log_2_pi 1.83787706640934533908
+#define log_pi 1.1447298858494001639
+// courtesty of BayesLogit pakage
+#define __PI 3.141592653589793238462643383279502884197
+#define HALFPISQ 0.5 * __PI * __PI
+#define FOURPISQ 4 * __PI * __PI
+#define __TRUNC 0.64
+#define __TRUNC_RECIP 1.0 / __TRUNC
 
 
 #endif

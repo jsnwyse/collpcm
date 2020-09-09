@@ -14,12 +14,14 @@
 #=========================================================
 
 
-collpcm.undo.label.switching <- function( Z, ngroups = NULL )
+collpcm.undo.label.switching <- function( Z, Gsamp = NULL )
 #undo label switching using Nobile and Fearnside approach
 {
 
 	# Z is a matrix of labels with row i indexing classifications
   	# to groups from 1 : ngroups[i] or 1:ngroups if ngroups is an integer 
+  	
+  	ngroups <- Gsamp
   	
   	if( is.null(ngroups) ) stop("\t argument ngroups must be specified as either a fixed number of groups or a vector of the number of groups corresponding to each row of Z")
     

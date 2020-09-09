@@ -1,12 +1,19 @@
 /*
- *  cat.c
+ *	This is a translation of the Fortran code
+ *	given in 
  *
- *  
- *  This is a C implementation of the algorithm of 
- *	Carpaneto and Toth for the assignment problem.
+ * Carpaneto and Toth (1980) 'Algorithm 548: Solution of the Assignment Problem'
+ * <doi:10.1145/355873.355883>
  *
- *	This is a direct translation of the Fortran code
- *	given in Carpaneto and Toth (1980).
+ *
+ * This translation was made by: 
+ *
+ * 		Jason Wyse,
+ *			School of Computer Science and Statistics,
+ *			Trinity College Dublin,
+ *			Dublin 2, Ireland.
+ *			email: wyseja@tcd.ie
+ *
  *
  *	The call to the function is assct(n,A,c,T)
  *	The meaning of the input parameters is 

@@ -1,7 +1,7 @@
 /*C functions to do evaluations for the latent position cluster model
 
-	Authors: Caitriona Ryan (QUT, Brisbane)  
-			 some slight modifications to Catriona's  functions made by Jason Wyse( TCD)
+	Authors: Caitriona Ryan (University of Limerick, Ireland)  
+			 some slight modifications to Catriona's  functions made by Jason Wyse
 	
 	Corresponding: Jason Wyse,
 			School of Computer Science and Statistics,
@@ -23,8 +23,10 @@ void put_network(int *Y,struct network *nw)
 
 	int i,j;
 	
-	for(i=0;i<nw->n;i++){
-		for(j=0;j<nw->n;j++){
+	for(i=0;i<nw->n;i++)
+	{
+		for(j=0;j<nw->n;j++)
+		{
 			nw->y[i][j] = Y[i + j*(nw->n)]; //remember column major format from R
 			nw->y_transpose[j][i] = nw->y[i][j];
 		}
@@ -48,9 +50,8 @@ void put_latentpositions( double *z, struct network *nw )
 	{
 		if( nw->d > 1 )
 		{
-			for(k=0;k<d;k++) {
-				X[i][k] = z[i + n*k];
-			}
+			for(k=0;k<d;k++) X[i][k] = z[i + n*k];
+			
 		}
 		else
 		{
@@ -97,7 +98,8 @@ void put_covariates(double *x,struct network *nw)
 
 	int ncov = nw->p,n = nw->n,i,j;
 	
-	for(i=0;i<n;i++){
+	for(i=0;i<n;i++)
+	{
 		for(j=0;j<ncov;j++)
 			nw->xcovs[i][j] = x[i + j*n];
 	}
@@ -121,22 +123,22 @@ struct network *network_create( int n , int d, int p, int dir, int maxG, int ini
 	nw->modty = modty;
 	
 	//network and covariates
-	nw->y  = calloc( n, sizeof(int*)  );
-	nw->y_transpose = calloc( n, sizeof(int*) );
-	nw->dist =  calloc( n, sizeof(double*) );
+	nw->y  = (int **)calloc( n, sizeof(int*)  );
+	nw->y_transpose = (int **)calloc( n, sizeof(int*) );
+	nw->dist =  (double **)calloc( n, sizeof(double*) );
 	if( p > 0 )
 	{
-		nw->theta = calloc( p, sizeof(double) );
-		nw->sigmatheta = calloc( p,  sizeof(double) );
-		nw->xcovs = calloc( n, sizeof(double*) );
+		nw->theta = (double *)calloc( p, sizeof(double) );
+		nw->sigmatheta = (double *)calloc( p,  sizeof(double) );
+		nw->xcovs = (double **)calloc( n, sizeof(double*) );
 	}
 	
 	for( i=0; i<n; i++ )
 	{
-		nw->y[i] = calloc( n, sizeof(int) );
+		nw->y[i] = (int *)calloc( n, sizeof(int) );
 		nw->y_transpose[i] = (int *)calloc( n, sizeof(int) );
-		nw->dist[i] = calloc( n, sizeof(double ) );
-		if( p > 0 ) nw->xcovs[i] = calloc( n, sizeof(double) );
+		nw->dist[i] = (double *)calloc( n, sizeof(double ) );
+		if( p > 0 ) nw->xcovs[i] = (double *)calloc( n, sizeof(double) );
 	}
 	
 	nw->llike = -DBL_MAX;
@@ -177,7 +179,7 @@ void network_destroy( struct network *nw )
 
 void network_initialize( struct network *nw, int *Y, double beta, double *theta, double *hyper_params, double sigmab, double sigmaz, double *sigmatheta, double *initialpositions, double *log_prior_groups )
 {
-	int k, p = nw->p, n = nw->n  ;
+	int k, p = nw->p ;
 	
 	put_network( Y, nw );
 	
@@ -277,16 +279,16 @@ void zupdatemh( struct network * nw, struct resy * presy, int i, int itnum, int 
 	double llik_curr = llike_node( nw, i ), 
 			 *xdelta,
 			 xdelta_,
-			 *x, x_ ;
+			 *x ;
 
-	if( d > 1 ) xdelta = calloc( d, sizeof(double) ) ;
+	//if( d > 1 ) xdelta = (double *)calloc( d, sizeof(double) ) ;
 	
 	//Rprintf("\n llikcurr = %.5f", llik_curr ); 
 
 	if( d > 1 ) 
 	{
 		x = mix->Y[i]; 
-		xdelta = calloc( d, sizeof(double) );
+		xdelta = (double *)calloc( d, sizeof(double) );
 	}
 
 	struct component *comp = mix->components[ mix->whereis[g] ] ;
@@ -410,9 +412,7 @@ double get_eta( double b, int d, double *x_1, double *x_2 )
 
 double llike_node(struct network * nw, int i)
 {
-  int    j, d = nw->pmix->d, 
-  			*y_i = nw->y[i], *yt_i = nw->y_transpose[i], 
-  			dir = nw->dir, diry ;
+  int    j, *y_i = nw->y[i], *yt_i = nw->y_transpose[i] ;
   
   double loglike = 0., eta, b = nw->beta, /***X = py->pmix->Y ,*/*d_i = nw->dist[i], prob;
   
@@ -456,8 +456,7 @@ double llike_node(struct network * nw, int i)
 double llike_full(struct network * nw )
 {
 
-  int    i, j , n = nw->n, d = nw->pmix->d,
-  			*y_i, *yt_i;
+  int i, j , n = nw->n, *y_i, *yt_i;
   			
   double loglike = 0.0, eta, b = nw->beta, /***X = py->pmix->Y,*/ *d_i, prob ;
   

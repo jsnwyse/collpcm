@@ -56,7 +56,7 @@ Jason Wyse
  
  Handcock, M. S., Raftery, A. E. and Tantrum, J. (2007).
  \emph{Model-Based Clustering for Social Networks.} 
- Journal of the Royal Statistical Society, Series A, Vol. 170, 301-354.
+ Journal of the Royal Statistical Society, Series A, Vol. 170, 301-354 <doi: 10.1111/j.1467-985X.2007.00471.x>
 }
 
 
@@ -66,7 +66,9 @@ Jason Wyse
 data(Monks)
 
 # run the model printing run updates to screen
-z <- collpcm.fit( Monks, G=3, d=2, control=list( verbose=TRUE ) )
+# this is an illustrative example (it should be run for much longer)
+z <- collpcm.fit( Monks, G=3, d=2, 
+control=list( verbose=TRUE, sample=2500, interval=1, burn=500 ) )
 
 # plot of the collpcm object
 plot( z )

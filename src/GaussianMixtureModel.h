@@ -17,10 +17,10 @@ Last modified: Fri 14 Mar 2014 13:00:01 GMT  */
 
 //#include "efficient_gamma.h"
 
-#define TRUE 1
+/*#define TRUE 1
 #define FALSE 0
 #define log_2_pi 1.83787706640934533908
-#define log_pi 1.1447298858494001639
+#define log_pi 1.1447298858494001639*/
 
 
 /*definition for different prior types*/

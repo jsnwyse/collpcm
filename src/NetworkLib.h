@@ -15,9 +15,9 @@ Last modified: Fri 14 Mar 2014 13:00:01 GMT  */
 
 #include "required_libs.h"
 
-#define TRUE 1
+/*#define TRUE 1
 #define FALSE 0
-#define log_2_pi 1.83787706640934533908
+#define log_2_pi 1.83787706640934533908*/
 
 #include "GaussianMixtureModel.h"
 

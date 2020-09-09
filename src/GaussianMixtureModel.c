@@ -18,9 +18,9 @@ void mixmod_warning(int warning)
 {
 	#define NumWarningMsgs 4
 
-  static const char *warningmsg[NumWarningMsgs] = {"The EM algorithm reached the maximum number of steps when initializing. Only a lower tolerance may be obtainable.",
+  /*static const char *warningmsg[NumWarningMsgs] = {"The EM algorithm reached the maximum number of steps when initializing. Only a lower tolerance may be obtainable.",
   	"Computation of the marginal likelihood for a cluster returned a nan",
-  	"There is a counting bug in metropolis move 1","Triona's initialization type cannot use the range as in conventional as only distances between points stored"};
+  	"There is a counting bug in metropolis move 1","Triona's initialization type cannot use the range as in conventional as only distances between points stored"};*/
 
  // printf("\n***Warning*** \t Reason: %s\n\n",warningmsg[warning]);
   return;
@@ -203,9 +203,9 @@ void allocate_results(struct results *results,int iterations,int burn_in,int len
 /*allocates space to store post burn-in iterations*/
 {
 	
-	int i,N = iterations-burn_in;
+	int N = iterations-burn_in;
 	
-	results->ngroups = calloc(N,sizeof(int));
+	results->ngroups = (int *)calloc(N,sizeof(int));
 	
 	results->niterations = iterations;
 	results->nburnin = burn_in;
@@ -215,7 +215,7 @@ void allocate_results(struct results *results,int iterations,int burn_in,int len
 		results->memberships[i] = calloc(len,sizeof(int));
 	}*/
 	
-	results->MAP_memberships = calloc(len,sizeof(int));
+	results->MAP_memberships = (int *)calloc(len,sizeof(int));
 	
 	results->proposed_m1 = 0;
 	results->accepted_m1 = 0;
@@ -233,7 +233,6 @@ void allocate_results(struct results *results,int iterations,int burn_in,int len
 
 void free_results(struct results *results,int iterations,int burn_in)
 {
-	int i,N = iterations-burn_in;
 	
 	free(results->ngroups);
 	
@@ -254,7 +253,7 @@ int initialize_simple(struct mix_mod *mixmod,int numgroups)
 {
 	int i, o, j,k,G=numgroups,d=mixmod->d,n=mixmod->n;
 	
-	int *order = calloc( n , sizeof(int) );
+	int *order = (int *)calloc( n , sizeof(int) );
 	for( i=0; i<n; i++ ) order[i] = i;
 	random_ranshuffle( order, n );
 	
@@ -451,9 +450,9 @@ void set_prior_hyperparameters(struct mix_mod *mixmod,int type)
 			parameterizations here are slightly different*/
 	
 			/*need to determine range in each direction*/
-			x = calloc(mixmod->n,sizeof(double));
-			range = calloc(mixmod->d,sizeof(double));
-			low_range = calloc(mixmod->d,sizeof(double));
+			x = (double *)calloc(mixmod->n,sizeof(double));
+			range = (double *)calloc(mixmod->d,sizeof(double));
+			low_range = (double *)calloc(mixmod->d,sizeof(double));
 	
 			/*determine range and low_range for each dimension*/
 			for(j=0;j<mixmod->d;j++){
@@ -599,9 +598,9 @@ int update_allocations_with_gibbs( struct mix_mod *mixmod )
 	int i, ind, k, g, d=mixmod->d, G=mixmod->G, *order, *wis;
 	double *probs, x_, *x, *lpp_store , max, z, lc, lp, lcm, lpp ;
 	
-	probs = calloc( G, sizeof(double)  );
-	lpp_store = calloc( G, sizeof(double) );
-	order = calloc( mixmod->n, sizeof(int) );
+	probs = (double *)calloc( G, sizeof(double)  );
+	lpp_store = (double *)calloc( G, sizeof(double) );
+	order = (int *)calloc( mixmod->n, sizeof(int) );
 	
 	struct component *comp_c, *comp_p ;
 	
@@ -776,8 +775,8 @@ void update_allocations_with_metropolis_move_1(struct mix_mod *mixmod,int *accep
 	component_g2 = component_create( mixmod->d );
 	
 	/*allocate a vector to keep track of indexes*/
-	indexes = calloc(ntot,sizeof(int));
-	proposed_alloc = calloc(ntot,sizeof(int));
+	indexes = (int *)calloc(ntot,sizeof(int));
+	proposed_alloc = (int *)calloc(ntot,sizeof(int));
 	
 	k=0;
 	for(i=0;i<mixmod->n;i++){
@@ -871,7 +870,7 @@ void update_allocations_with_metropolis_move_2(struct mix_mod *mixmod,int *accep
 	
 	}
 
-	int i,ii,j,k,d=mixmod->d,g1,g2,ig1,ig2,curr_n_g1,m,c=0;
+	int i,ii,k,d=mixmod->d,g1,g2,curr_n_g1,m,c=0;
 	int *indexes,*order;
 	double log_acceptance;
 	struct component *component_g1,*component_g2, *curr_component_g1, *curr_component_g2;
@@ -902,7 +901,7 @@ void update_allocations_with_metropolis_move_2(struct mix_mod *mixmod,int *accep
 	
 	*proposed += 1;
 	
-	order = calloc(curr_n_g1,sizeof(int));
+	order = (int *)calloc(curr_n_g1,sizeof(int));
 	for(i=0;i<curr_n_g1;i++){
 		order[i] = i;
 	}
@@ -910,7 +909,7 @@ void update_allocations_with_metropolis_move_2(struct mix_mod *mixmod,int *accep
 	/*shuffle the order*/
 	random_ranshuffle( order, curr_n_g1 );
 	
-	indexes = calloc(curr_n_g1,sizeof(int));
+	indexes = (int *)calloc(curr_n_g1,sizeof(int));
 	for(i=0;i<mixmod->n;i++){
 		if(mixmod->z[i] == g1){
 			indexes[c] = i;
@@ -992,10 +991,9 @@ void update_allocations_with_metropolis_move_3(struct mix_mod *mixmod ,int *acce
 	
 	}
 
-	int i,ii,j,k,g1,g2,ntot,c=0,d = mixmod->d;
+	int i,ii,k,g1,g2,ntot,c=0,d = mixmod->d;
 	int *indexes,*order,*proposed_allocation;
-	double w,log_acceptance,alpha=mixmod->alpha,delta=mixmod->delta,kappa=mixmod->kappa,gamma=mixmod->gamma,*xi=mixmod->prior_mu
-			,log_transition_z_to_zprime=0.,log_transition_zprime_to_z=0.,l1,l2,p1, lm1, lm2;
+	double w,log_acceptance, log_transition_z_to_zprime=0.,log_transition_zprime_to_z=0.,l1,l2,p1, lm1, lm2;
 	struct component *component_g1, *component_g2, *curr_component_g1, *curr_component_g2;
 	
 	*proposed += 1;
@@ -1018,9 +1016,9 @@ void update_allocations_with_metropolis_move_3(struct mix_mod *mixmod ,int *acce
 		return;
 	}
 	
-	indexes = calloc(ntot,sizeof(int));
-	order = calloc(ntot,sizeof(int));
-	proposed_allocation = calloc(ntot,sizeof(int));
+	indexes = (int *)calloc(ntot,sizeof(int));
+	order = (int *)calloc(ntot,sizeof(int));
+	proposed_allocation = (int *)calloc(ntot,sizeof(int));
 	
 	/*this move can still be done if either component empty*/
 	
@@ -1213,11 +1211,10 @@ void update_allocations_with_ejection_move(struct mix_mod *mixmod ,int *accepted
 /*this is the ejection move for one comonent ejecting another*/
 {
 
-	int i,ii,j,g1,g2,ig1,ig2,ntot,c=0,d = mixmod->d;
+	int i,ii,g1,g2,ig1,ig2,ntot,c=0,d = mixmod->d;
 	int *indexes,*proposed_allocation,G = mixmod->G;
-	double w,a,prob_put_in_g2,log_acceptance,alpha=mixmod->alpha,delta=mixmod->delta,kappa=mixmod->kappa,gamma=mixmod->gamma,*xi=mixmod->prior_mu
-			,log_transition_z_to_zprime=0.,log_transition_zprime_to_z=0.;
-	struct component *component_g1, *component_g2, *curr_component_g1, *curr_component_g2;
+	double w,a,prob_put_in_g2,log_acceptance, log_transition_z_to_zprime=0.,log_transition_zprime_to_z=0.;
+	struct component *component_g1, *component_g2, *curr_component_g1;
 	
 	*proposed += 1;
 	
@@ -1241,8 +1238,8 @@ void update_allocations_with_ejection_move(struct mix_mod *mixmod ,int *accepted
 		/*this is the case for ejecting from a non-empty component*/
 		
 		
-		indexes = calloc(ntot,sizeof(int));
-		proposed_allocation = calloc(ntot,sizeof(int));
+		indexes = (int *)calloc(ntot,sizeof(int));
+		proposed_allocation = (int *)calloc(ntot,sizeof(int));
 		
 		c = 0;
 		
@@ -1423,10 +1420,9 @@ void update_allocations_with_ejection_move(struct mix_mod *mixmod ,int *accepted
 
 void update_allocations_with_absorb_move(struct mix_mod *mixmod,int *accepted,int *proposed,double pr_ej_G,double pr_ej_Gm1)
 {
-	int i,ii,j,k,g1,g2,ig1,ig2,ntot,c=0,d = mixmod->d;
+	int i,ii,j,k,g1,g2,ntot,c=0,d = mixmod->d;
 	int *indexes,*proposed_allocation,G = mixmod->G,n_g2;
-	double w,a,log_acceptance,alpha=mixmod->alpha,delta=mixmod->delta,kappa=mixmod->kappa,gamma=mixmod->gamma,*xi=mixmod->prior_mu
-			,log_transition_z_to_zprime=0.,log_transition_zprime_to_z=0.;
+	double w,a,log_acceptance,log_transition_z_to_zprime=0.,log_transition_zprime_to_z=0.;
 	struct component *component_g1, *curr_component_g1, *curr_component_g2;
 	
 	*proposed += 1;
@@ -1457,8 +1453,8 @@ void update_allocations_with_absorb_move(struct mix_mod *mixmod,int *accepted,in
 	if(n_g2 > 0){
 	
 		/*this is the case for non-empty components*/
-		indexes = calloc(n_g2,sizeof(int));
-		proposed_allocation = calloc(n_g2,sizeof(int));
+		indexes = (int *)calloc(n_g2,sizeof(int));
+		proposed_allocation = (int *)calloc(n_g2,sizeof(int));
 		
 		c = 0;
 		
@@ -2014,7 +2010,7 @@ void update_hyperparameters(struct mix_mod *mixmod)
 	int i, j, k, G = mixmod->G, d = mixmod->d, n_g, iter;
 	double *tau_g, xi2, sq_norm, a, b, m, sd, sum, sum2, l, c2;
 	
-	tau_g = calloc(G,sizeof(double));
+	tau_g = (double *)calloc(G,sizeof(double));
 	
 	/*draw tau_g*/
 	
@@ -2076,8 +2072,8 @@ void update_hyperparameters(struct mix_mod *mixmod)
 
 	
 		double **mu_g;
-		mu_g = calloc(G,sizeof(double *));
-		for(i=0;i<G;i++) mu_g[i] = calloc(d,sizeof(double));
+		mu_g = (double **)calloc(G,sizeof(double *));
+		for(i=0;i<G;i++) mu_g[i] = (double *)calloc(d,sizeof(double));
 		
 		for( iter=0; iter<100; iter++) 
 		{
@@ -2279,15 +2275,14 @@ void do_mixmod_analysis_one_sweep(struct results *pres,struct mix_mod *mixmod,in
 {
 
 
-	int ej_case,maxgroups = mixmod->maxgroups,l;
-	int experiment = FALSE;
+	int ej_case,maxgroups = mixmod->maxgroups;
 
 	double pr_ej_G,pr_ej_Gm1,pr_ej_Gp1;
 	
 	update_allocations_with_gibbs(mixmod);
  
  	//Move M1 always has a low acceptance rate... so don't bother
-  	update_allocations_with_metropolis_move_1(mixmod,&(pres->accepted_m1),&(pres->proposed_m1));
+  update_allocations_with_metropolis_move_1(mixmod,&(pres->accepted_m1),&(pres->proposed_m1));
 
 	update_allocations_with_metropolis_move_2(mixmod,&(pres->accepted_m2),&(pres->proposed_m2));
 
