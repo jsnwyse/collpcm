@@ -1,6 +1,17 @@
+/*FUNCTIONS FOR PACKAGE COLLPCM
+ 
+ Author:	Jason Wyse,
+ School of Computer Science and Statistics,
+ Lloyd Institute,
+ Trinity College,
+ Dublin 2,
+ Ireland.
+ mailto: wyseja@tcd.ie
+ 
+ Last modification of this code: Wed 16 Sep 2020 21:14:42 IST   */
 
-#ifndef _REQUIRED_LIBS_H_
-#define _REQUIRED_LIBS_H_
+#ifndef __COLLPCM_REQUIRED_LIBS_H__
+#define __COLLPCM_REQUIRED_LIBS_H__
 
 #include <stdio.h>
 #include <stdlib.h>

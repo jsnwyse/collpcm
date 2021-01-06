@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1600284609009.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4168762617",
+    "id" : "FEA5D3A9",
+    "lastKnownWriteTime" : 1600894368,
+    "last_content_update" : 1600894368038,
+    "path" : "~/Dropbox/githubrepos/collpcm/src/collapsed_lpcm.c",
+    "project_path" : "src/collapsed_lpcm.c",
+    "properties" : {
+        "cursorPosition" : "112,9",
+        "scrollLine" : "90"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "c"
+}

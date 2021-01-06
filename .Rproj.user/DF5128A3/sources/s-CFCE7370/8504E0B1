@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1600808580173.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "8504E0B1",
+    "lastKnownWriteTime" : 1600894211,
+    "last_content_update" : 1600894211237,
+    "path" : "~/Dropbox/githubrepos/collpcm/src/COLLPCM_NetworkLib.c",
+    "project_path" : "src/COLLPCM_NetworkLib.c",
+    "properties" : {
+        "cursorPosition" : "196,6",
+        "scrollLine" : "179"
+    },
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "c"
+}

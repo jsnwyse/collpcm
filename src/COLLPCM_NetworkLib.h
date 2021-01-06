@@ -13,13 +13,17 @@ Last modified: Fri 14 Mar 2014 13:00:01 GMT  */
 #ifndef __NETWORK_LIB__
 #define __NETWORK_LIB__
 
-#include "required_libs.h"
+//#include "required_libs.h"
 
 /*#define TRUE 1
 #define FALSE 0
 #define log_2_pi 1.83787706640934533908*/
 
-#include "GaussianMixtureModel.h"
+//#include "GaussianMixtureModel.h"
+
+#include "COLLPCM_mixmod.h"
+#include "COLLPCM_component.h"
+
 
 struct network
 /*structure to hold network essentials*/
@@ -30,14 +34,13 @@ struct network
 	int p;
 	int d;
 	
-	int **y; 	/*network - adjacency  matrix*/	
-	int **y_transpose; //network adjacency matrix transpose
+	int *y; 	// pointer to network values (n^2 in length)
 	
 	//this is doubled up here! we are using py->pmix->Y for this!!! Get rid of?!
 	
-	double **dist; /*the distance between the actors positions */	
-	double **xcovs;  /*the actor covariate values*/	
-	double ***pdiffs;
+	double *dist; /*the distance between the actor positions */	
+	double *xcovs;  /*the actor covariate values*/	
+	//double ***pdiffs;
 	double llike;	/*the current log likelihood value*/	
 // 	double 		      *	likcuri;/*the current log likelihood value for actor is contribution*/	
 	double beta; 	/*the current beta value*/	
@@ -65,29 +68,30 @@ struct resy
 	int proposed_z;
 };
 
-void put_network(int *Y,struct network *nw);
+//void put_network(int *Y,struct network *nw);
 
-void put_latentpositions( double *z, struct network *nw );
+//void put_latentpositions( double *z, struct network *nw );
 
-void put_covariates(double *x,struct network *nw);
+//void put_covariates(double *x,struct network *nw);
 
-struct network *network_create( int n , int d, int p, int dir, int maxG, int initG, int modty );
-void network_destroy( struct network *nw );
+struct network *COLLPCM_network_create( int n , int d, int p, int dir, int maxG, int initG );
 
-void network_initialize( struct network *nw, int *Y, double beta, double *theta, double *hyper_params, double sigmab, double sigmaz, double *sigmatheta, double *initialpositions, double *log_prior_groups );
+void COLLPCM_network_destroy( struct network *nw );
 
-void dist_update( struct network *nw, int i );
+void COLLPCM_network_initialize( struct network *nw, int *Y, double beta, double *theta, double *hyper_params, double sigmab, double sigmaz, double *sigmatheta, double *initialpositions, double *log_prior_groups );
 
-void  initresy(struct resy *presy, int ncovs);
+void COLLPCM_dist_update( struct network *nw, int i );
 
-void zupdatemh(struct network *nw, struct resy * presy, int i,int itnum,int burnin,double c);
+void  COLLPCM_initresy(struct resy *presy, int ncovs);
 
-void betaupdate(struct network *nw , struct resy * presy,int itnum,int burnin,double c);
+void COLLPCM_zupdatemh(struct network *nw, struct resy * presy, int i,int itnum,int burnin,double c);
 
-double get_eta( double b, int d, double *x_1, double *x_2 );
+void COLLPCM_betaupdate(struct network *nw , struct resy * presy,int itnum,int burnin,double c);
 
-double llike_node(struct network *nw,int i );
+//double get_eta( double b, int d, double *x_1, double *x_2 );
 
-double llike_full( struct network *nw );
+double COLLPCM_llike_node(struct network *nw,int i );
+
+double COLLPCM_llike_full( struct network *nw );
 
 #endif

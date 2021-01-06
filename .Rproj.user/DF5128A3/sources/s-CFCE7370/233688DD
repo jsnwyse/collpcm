@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1600892835090.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "233688DD",
+    "lastKnownWriteTime" : 1600286960,
+    "last_content_update" : 1600286960,
+    "path" : "~/Dropbox/githubrepos/collpcm/src/GaussianMixtureModel.c",
+    "project_path" : "src/GaussianMixtureModel.c",
+    "properties" : {
+        "cursorPosition" : "2255,0",
+        "scrollLine" : "2231"
+    },
+    "relative_order" : 9,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "c"
+}

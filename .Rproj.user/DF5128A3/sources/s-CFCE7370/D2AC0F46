@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1600807843450.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "D2AC0F46",
+    "lastKnownWriteTime" : 1600894347,
+    "last_content_update" : 1600894347011,
+    "path" : "~/Dropbox/githubrepos/collpcm/src/COLLPCM_mixmod.h",
+    "project_path" : "src/COLLPCM_mixmod.h",
+    "properties" : {
+        "cursorPosition" : "105,98",
+        "scrollLine" : "74"
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "h"
+}

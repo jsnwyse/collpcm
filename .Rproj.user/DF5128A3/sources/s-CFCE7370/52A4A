@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1600894481394.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "52A4A",
+    "lastKnownWriteTime" : 1600607404,
+    "last_content_update" : 1600607404,
+    "path" : "~/Dropbox/githubrepos/collpcm/src/COLLPCM_eject_absorb.c",
+    "project_path" : "src/COLLPCM_eject_absorb.c",
+    "properties" : {
+        "cursorPosition" : "14,0",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 10,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "c"
+}

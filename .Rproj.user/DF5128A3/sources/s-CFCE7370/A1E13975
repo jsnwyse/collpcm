@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1600287100256.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4036101868",
+    "id" : "A1E13975",
+    "lastKnownWriteTime" : 1600893506,
+    "last_content_update" : 1600893506362,
+    "path" : "~/Dropbox/githubrepos/collpcm/src/COLLPCM_component.h",
+    "project_path" : "src/COLLPCM_component.h",
+    "properties" : {
+        "cursorPosition" : "42,4",
+        "scrollLine" : "9"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "h"
+}
