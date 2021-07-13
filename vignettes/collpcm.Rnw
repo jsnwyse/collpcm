@@ -1,0 +1,7 @@
+\documentclass{article}
+\usepackage{pdfpages}
+%\VignetteIndexEntry{collpcm}
+
+\begin{document}
+\includepdf[pages=-, fitpaper=true]{collpcm-vignette.pdf}
+\end{document}

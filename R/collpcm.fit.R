@@ -7,12 +7,15 @@ collpcm.fit <- function( Y , d = 2, G=NULL, Gmax = NULL, control = list(), Xref 
 	#	control :: a list giving the settings
 
 	#do checks first to make sure everything in order
+  
+  if( d < 1 || d != floor(d) ) stop("Argument d gives the dimension of the latent space and must be a positive integer")
+  if( d > 2 ) warning("The package can visualize the latent space only when d=1 or d=2")
 	
 	A <- as.sociomatrix( Y ) 
 	dir <- is.directed( Y )
 	
 	if( nrow(A) != ncol(A) )
-		stop("Adjacency matrix must be a square matrix.")
+		stop("Adjacency matrix must be a square matrix")
 
 	n <- nrow( A )
 
@@ -35,7 +38,7 @@ collpcm.fit <- function( Y , d = 2, G=NULL, Gmax = NULL, control = list(), Xref 
 	
 	#if( control$bradley.terry ) control$betainit <- 0 
 	
-	initparams <- c( control$betainit, 0 )
+	initparams <- c( control$betainit, 0. )
 	
 	len <- control$sample 
 	
@@ -102,34 +105,21 @@ collpcm.fit <- function( Y , d = 2, G=NULL, Gmax = NULL, control = list(), Xref 
 	
 	#arrange the latent positions into a 3 indexed array with index 1 giving the iteration number...
 
-	if( !control$store.sparse ) 
-	{
-		if( d > 1 ) 
-		{
-			Xsamp <- matrix( mcmcout$Xsamp, nrow = n*len, ncol = d, byrow=FALSE )
-		}else{
-			Xsamp <- mcmcout$Xsamp 
-		}
-		
-	}
-
 	Gsamp <- mcmcout$Gsamp
 
 	betasamp <- mcmcout$betasamp
 
 	if( !control$store.sparse ) theta <- matrix( mcmcout$thetasamp, nrow = len, ncol = ncovariates, byrow=TRUE )
 	
-	gdist <- numeric( max(Gsamp) - min(Gsamp) + 1 )
+	uG <- sort( unique(Gsamp) )
+	gdist <- numeric( length(uG) )
 	j <- 1
-	for( i in min(Gsamp):max(Gsamp) ){
-		gdist[j] <- sum( Gsamp == i )
-		j <- j + 1
-	}
+	for( k in seq_along(uG) ) gdist[k] <- sum( Gsamp == uG[k] )
 	gdist <- gdist/len
 	Gdist <- matrix( nrow = length(gdist), ncol = 2 )
 	colnames(Gdist) <- c( "Number groups", "Posterior probability" )
 	rownames(Gdist) <- rep( " ", length(gdist) )
-	Gdist[,1] <- min(Gsamp):max(Gsamp)
+	Gdist[,1] <- uG
 	Gdist[,2] <- gdist
 	
 	zz$sample <- list( G = Gsamp, beta = betasamp, llike = mcmcout$llike )
@@ -142,120 +132,65 @@ collpcm.fit <- function( Y , d = 2, G=NULL, Gmax = NULL, control = list(), Xref 
 	
 		tstart.labels <- proc.time()
 		
+		if( control$verbose ) cat("\n\t Starting label switching post processing...")
+		
 		allocations <- matrix( mcmcout$allocations, nrow=len, ncol=n, byrow=TRUE )
 		allocations <- allocations + 1
 		labels <- collpcm.undo.label.switching( allocations, Gsamp )
 		zz$sample$labels <- labels$relab
 		zz$sample$Gslot <- labels$numcomponents
 		zz$sample$label.probs <- labels$label.probs
+		zz$sample$label.probs.idx <- labels$item.tags
 		
-		
-		#zz$labels <- labels
-
-		#zz$labels.loo <- mcmcout$allocations
-	
-		#zz$loo <- loo
-	
+		if( control$verbose ) cat("\n\t Finished label switching post processing...")
 	
 		tend.labels <- proc.time()
 	
 		#do the Procrustes
 		
-		tstart.procrustes <- proc.time()
-		
-		if( d > 1 )
-		{
-			t <- array( Xsamp, c( d, n, len ) )
-			Xsamp <- aperm( t, c(2,1,3) )
-		}else{
-			Xsamp <- matrix( Xsamp, nrow=n, ncol=len  )
-		}
-		
-		#latent.positions <- aperm( t, c(2,1,3) )
-	
-		idx <- which.max( mcmcout$llike )
-		
-		if( length(idx) > 1 ) idx <- idx[1]
-		
-		if( d > 1 )
-		{
-			if( is.na(Xref) ) Xref <- Xsamp[ , , idx]
-		}else{
-			if( is.na(Xref) ) Xref <- Xsamp[ , idx]
-		}
-		
-		zz$sample$Xref <- Xref
-
-		#match positions
-		Xproc <- array( numeric(), c( n, d, len ) )
-		
 		if( control$verbose ) cat("\n\t Starting Procrustes matching...")
 		
-		if( d > 1 )
-		{
-			for(t in 1:len)
-			{
-				procr <- procrustes( Xref, Xsamp[,,t], truemean=FALSE, scale=FALSE )
-		  		Xproc[,,t] <- procr$Yrot
-			}
-		}else{
-			for( t in 1:len ) Xsamp[, t] <- Xsamp[,t] - mean( Xsamp[,t] - Xref )
-		}
-	
+		tstart.procrustes <- proc.time()
+		
+		Xsamp <- array( mcmcout$Xsamp, c(d,n,len) )
+		Xsamp <- aperm( Xsamp, c(2,1,3) )
+		
+		# centre all sampled positions around origin
+		Xsamp <- apply( Xsamp, c(2,3), function(x) scale(x, scale=FALSE) )
+		
+		# reference positions
+		idx <- which.max( mcmcout$llike )[1] # in case of ties
+		if( is.na(Xref) ) Xref <- Xsamp[,,idx]
+		zz$sample$Xref <- Xref
+		
+		# compute the crossprod
+		crpr <- apply( Xsamp, c(2,3) , function(x) crossprod( Xref, x) )
+		# get the svd
+		if( d > 1 ) svald <- apply( crpr, 3, svd ) else svald <- apply( crpr, 2, svd)
+		# get the rotation matrices
+		rot <- lapply( svald, function(x) x$v %*% t(x$u) )
+		# rotate the samples
+		for( k in 1:len ) Xsamp[,,k] <- Xsamp[,,k] %*% rot[[k]]
+		
 		if( control$verbose ) cat("\n\t Finished Procrustes matching...")	
-	
 		tend.procrustes <- proc.time()
 	
-		#special case for leave one out method
-	
-		#make a list with the latent positions for each number of groups
-		latentpos <- list()
-		Xpostmean <- list()
+		numgr <- length(uG)
 		
-		j <- 1
-		ug <- unique( Gsamp )
-		for(i in ug ){
-			idxs <- which( Gsamp == i )
-			if( d > 1 ) 
-			{
-				latentpos[[j]] <- Xproc[,,idxs] 
-				if( length(idxs) > 1 )
-				{
-					Xpostmean[[j]] <- apply( latentpos[[j]], c(1,2), mean  )
-				}else{
-					Xpostmean[[j]] <- latentpos[[j]]
-				}
-			}else{ 
-				latentpos[[j]] <- Xsamp[,idxs]
-				if( length(idxs) > 1 )
-				{
-					Xpostmean[[j]] <- apply( latentpos[[j]], 1 , mean  )
-				}else{
-					Xpostmean[[j]] <- latentpos[[j]]
-				}
-			}
-			j <- j + 1
-		}
+		nol <- paste0("G=",uG)
+		zz$sample$X <- zz$Xpostmean <- vector( numgr, mode="list" )
+		names(zz$sample$X) <- names(zz$Xpostmean) <- nol
 		
-		#sort the entries of latentpos and label
-		
-		ord <- sort( ug, index.return=TRUE )$ix
-		
-		zz$sample$X <- zz$Xpostmean <- list()
-		
-		for( k in 1:length(ord) ) 
+		for( k in seq_along(uG) )
 		{
-			zz$sample$X[[k]] <- latentpos[[ ord[k] ]]
-			zz$Xpostmean[[k]] <- Xpostmean[[ ord[k] ]]
+		  idxs <- which( Gsamp == uG[k] )
+		  zz$sample$X[[k]] <- Xsamp[,,idxs, drop=FALSE]
+		  zz$Xpostmean[[k]] <- apply( zz$sample$X[[k]], c(1,2), mean ) 
 		}
 		
-		nol <- paste0("G=",sort(ug))
-		
-		names( zz$sample$X ) <- names( zz$Xpostmean ) <- nol
 	}
 	
 	if( control$gamma.update ) zz$sample$gamma <- mcmcout$gammasamp
-	
 	
 	if( !control$store.sparse )
 	{
@@ -264,37 +199,15 @@ collpcm.fit <- function( Y , d = 2, G=NULL, Gmax = NULL, control = list(), Xref 
 		#do the maximum Kullback-Liebler calc in here as need return intact for this
 		if( control$MKL ) 
 		{
-			latentpos.mkl <- list()
-			beta.mkl <- list()
-			j <- 1
-			ug <- unique( Gsamp )
-			for(i in ug){
-				idxs <- which( Gsamp == i)
-				if( length(idxs) == 1 ) 
-				{
-					stre <- latentpos[[j]]
-					if( d > 1 )
-					{
-						latentpos[[j]] <- array( dim=c( dim(stre) , 2 ) )
-						latentpos[[j]][,,1] <- stre
-					}else{
-						latentpos[[j]] <- array( dim=c( n, 2 ) )
-						latentpos[[j]][,1] <- stre
-					}
-				}
-				if( length(idxs) > 1 ) 
-				{
-					latentpos.mkl[[j]] <- collpcm.get.MKL.latent.positions( zz, betasamp[ idxs ] , latentpos[[j]]   )[["X"]]
-				}
-				if( length(idxs) == 1 ) latentpos.mkl[[j]] <- stre
-				j <- j + 1
-			}
-			
-			zz$XpostMKL <- list()
-			for( k in 1:length(ord) ) zz$XpostMKL[[ k ]] <- latentpos.mkl[[ ord[k] ]] 
-			names( zz$XpostMKL ) <- nol
-			
-			zz$Gslot <- sort( ug )
+		  zz$XpostMKL  <- vector( numgr, mode="list" )
+		  names( zz$XpostMKL ) <- nol
+		  
+		  for( k in seq_along(uG) )
+		  {
+		    idxs <- which( Gsamp == uG[k])
+		    zz$XpostMKL[[k]] <- collpcm.get.MKL.latent.positions( zz, betasamp[ idxs ] , zz$sample$X[[k]]   )[["X"]]
+		  }
+		  
 		}
 		
 		if( control$verbose ) cat("\n\t MKL positions found...")

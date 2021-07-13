@@ -2,7 +2,7 @@
 \alias{collpcm.control}
 \title{Specify parameters determining the collapsed LPCM model and MCMC fitting run}
 \description{
-  Specify the number of samples to be collected, burn in to be used, sub-sampling interval, whether variable model jumps are aloud, and whether to run a pilot sample in the initial model.
+  Specify the number of samples to be collected, burn in to be used, sub-sampling interval, whether variable model jumps are allowed, and whether to run a pilot sample in the initial model.
 }
 \usage{
  collpcm.control( x = list() , n, d )
@@ -31,16 +31,16 @@
  \item{sample}{Number of MCMC samples to be stored.}
  \item{burn}{Number of MCMC iterations to discard as burn-in.}
  \item{interval}{Number of iterations at which to sub-sample the chain and store i.e. total iterations post burn-in is sample*interval.}
- \item{model.search}{Logical; if TRUE the model space for G is searched.}
+ \item{model.search}{Logical; if TRUE (default) the model space for G is searched.}
  \item{pilot}{Number of iterations to run as a pilot to adapt the proposal standard deviations for the MCMC chains (in addition to adaptation during burn-in).}
  \item{sd.beta.prop}{Standard deviation of the random walk proposal updating the intercept.}
  \item{sd.X.prop}{Standard deviation of the (possibly multivariate) random walk proposal for an actor's latent position.}
- \item{gamma.update}{Logical; if TRUE then the \code{gamma} hyperparameter is updated as part of the MCMC run.}
+ \item{gamma.update}{Logical; if TRUE (default) then the \code{gamma} hyperparameter is updated as part of the MCMC run.}
  \item{store.sparse}{Logical; do a sparse form of storage and don't return or store some of the MCMC run and only keep summary values.}
- \item{adapt}{Use an adaptive phase during burn-in to tune the standard deviation of the proposals to get an "optimal" acceptance rate.}
+ \item{adapt}{Logical; if TRUE (default) use an adaptive phase during burn-in to tune the standard deviation of the proposals to get an "optimal" acceptance rate.}
  \item{adapt.interval}{The number of iterations between tweaks of the proposal standard deviations in the adaptation phase.}
- \item{MKL}{Logical; if TRUE compute the maximum Kullback-Liebler configuration of the latent positons from Handcock, Raftery & Tantrum (2007) }
- \item{verbose}{Logical; if TRUE print out progression messages througout the MCMC run and stages of fitting.}
+ \item{MKL}{Logical; if TRUE (default) compute the maximum Kullback-Liebler configuration of the latent positons from Handcock, Raftery & Tantrum (2007) }
+ \item{verbose}{Logical; if TRUE (default) print out progression messages througout the MCMC run and stages of fitting.}
 
 }
 
@@ -49,9 +49,9 @@ Jason Wyse
 }
 
 \references{
-Ryan, C., Wyse, J. and Friel, N. (2016)
+Ryan, C., Wyse, J. and Friel, N. (2017)
  \emph{Bayesian model selection for the latent position cluster model for Social Networks.} 
- Network Science (accepted).
+ Network Science, volume 5, 70-91.
 }
 
 

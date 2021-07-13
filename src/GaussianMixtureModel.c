@@ -13,6 +13,21 @@ Last modified: Fri 14 Mar 2014 13:00:01 GMT  */
 
 #define debug TRUE
 
+void mixmod_warning(int warning)
+/*warning handler*/
+{
+	#define NumWarningMsgs 4
+
+  /*static const char *warningmsg[NumWarningMsgs] = {"The EM algorithm reached the maximum number of steps when initializing. Only a lower tolerance may be obtainable.",
+  	"Computation of the marginal likelihood for a cluster returned a nan",
+  	"There is a counting bug in metropolis move 1","Triona's initialization type cannot use the range as in conventional as only distances between points stored"};*/
+
+ // printf("\n***Warning*** \t Reason: %s\n\n",warningmsg[warning]);
+  return;
+
+}
+
+
 struct mix_mod *mixmod_create( int datasize, int datadimension, int maxgroups,  int initgroups )
 {
 
@@ -27,17 +42,17 @@ struct mix_mod *mixmod_create( int datasize, int datadimension, int maxgroups,  
 	
 	if( mm->d == 1 )
 	{
-		mm->y_uni = (double *)calloc( datasize, sizeof(double) );
+		mm->y_uni = calloc( datasize, sizeof(double) );
 	}
 	else
 	{
-		mm->Y = (double **)calloc(datasize,sizeof(double *));
+		mm->Y = calloc(datasize,sizeof(double *));
 		for(i=0;i<datasize;i++){
-			mm->Y[i] = (double *)calloc(datadimension,sizeof(double));
+			mm->Y[i] = calloc(datadimension,sizeof(double));
 		}
 	}
 
-	mm->z = (int *)calloc(datasize,sizeof(int));
+	mm->z = calloc(datasize,sizeof(int));
 	
 	/*allocate this memory-- only initialize what is needed for initial conditions*/
 	mm->components = (struct component **)malloc(sizeof(struct component *)*maxgroups);
@@ -49,16 +64,16 @@ struct mix_mod *mixmod_create( int datasize, int datadimension, int maxgroups,  
 
 	/*allocate whereis*/
 	
-	mm->whereis = (int *)calloc(maxgroups,sizeof(int));
+	mm->whereis = calloc(maxgroups,sizeof(int));
 	for(i=0;i<maxgroups;i++)
 		mm->whereis[i] = -1;
 
 	if( mm->d > 1 )
-		mm->prior_mu = (double *)calloc( mm->d ,sizeof(double));
+		mm->prior_mu = calloc( mm->d ,sizeof(double));
 	else
-		mm->prior_mu = (double *)calloc( 2, sizeof(double) );
+		mm->prior_mu = calloc( 2, sizeof(double) );
 	
-	mm->log_prior_G = (double *)calloc(maxgroups+1,sizeof(double));
+	mm->log_prior_G = calloc(maxgroups+1,sizeof(double));
 
 	return( mm );
 
@@ -113,9 +128,9 @@ struct component *component_create( int d )
 	c->d = d ;
 	c->sum_squared_norm = 0.;
 	if( d == 1 ) 
-		c->sum = (double *)calloc( 2, sizeof(double) );
+		c->sum = calloc( 2, sizeof(double) );
 	else
-		c->sum = (double *)calloc( d, sizeof(double) );
+		c->sum = calloc( d, sizeof(double) );
 		
 	c->log_prob = -DBL_MAX;
 	return( c );
@@ -139,12 +154,14 @@ void component_refresh( struct component *c )
 
 void component_add_to_component( struct component *comp, double *x, int sgn )
 {
-	int k, d=comp->d;
+	int k;
+	
 	comp->n_g += sgn;
-	for( k=0; k<d; k++ )
+	
+	for( k=0; k<comp->d; k++ )
 	{
 	 	comp->sum[k] += sgn * x[k] ;
-		comp->sum_squared_norm += sgn * ( x[k] * x[k] ) ;
+		comp->sum_squared_norm += sgn * x[k] * x[k] ;
 	}
 	
 }
@@ -614,7 +631,7 @@ int update_allocations_with_gibbs( struct mix_mod *mixmod )
 		if( d > 1 ) 
 			component_add_to_component( comp_c, x, -1 ) ;
 		else
-			component_add_to_component_uni( comp_c, x_,-1);
+			component_add_to_component_uni( comp_c, x_, -1);
 		
 		lcm = GMM_return_marginal_likelihood_component( comp_c, mixmod ) ;
 		

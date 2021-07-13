@@ -1,0 +1,93 @@
+/*C functions to do evaluations for the latent position cluster model
+
+	Authors: Caitriona Ryan (QUT, Brisbane) and Jason Wyse( TCD) , 
+	
+	Corresponding: Jason Wyse,
+			School of Computer Science and Statistics,
+			Trinity College Dublin,
+			Dublin 2, Ireland.
+			email: wyseja@tcd.ie
+			
+Last modified: Fri 14 Mar 2014 13:00:01 GMT  */ 
+
+#ifndef __NETWORK_LIB__
+#define __NETWORK_LIB__
+
+#include "required_libs.h"
+
+#define TRUE 1
+#define FALSE 0
+#define log_2_pi 1.83787706640934533908
+
+#include "GaussianMixtureModel.h"
+
+struct network
+/*structure to hold network essentials*/
+{	
+
+	int dir; 	/*1 TRUE or 0 FALSE if network is dir */ ///boolean?! 
+	int n;
+	int p;
+	int d;
+	
+	int **y; 	/*network - adjacency  matrix*/	
+	int **y_transpose; //network adjacency matrix transpose
+	
+	//this is doubled up here! we are using py->pmix->Y for this!!! Get rid of?!
+	
+	double **dist; /*the distance between the actors positions */	
+	double **xcovs;  /*the actor covariate values*/	
+	double ***pdiffs;
+	double llike;	/*the current log likelihood value*/	
+// 	double 		      *	likcuri;/*the current log likelihood value for actor is contribution*/	
+	double beta; 	/*the current beta value*/	
+	double *theta; 	/*the current theta value*/	
+	double sigmab; /*the standard deviation of the beta proposals*/	
+	double sigmaz; /*the standard deviation of the z proposals for simple metropolis hastings step*/	
+	double xi;	/*beta hyperparameter - mean of normal prior for beta*/     
+ 	double psi;	/*beta hyperparameter - variance of normal prior for beta*/
+ 	double *sigmatheta;
+	double rho;	/*theta hyperparameter - mean of normal prior for beta*/     
+ 	double zeta;	/*theta hyperparameter - variance of normal prior for beta*/
+ 	
+ 	int modty ; //the type of model LPCM (0) or Bradley-Terry (1)
+ 	
+ 	struct mix_mod *pmix; 	/*pointer to mixmod structure*/		
+};
+
+struct resy
+/*a structure to store the ress of the network side of the analysis*/
+{	
+	int accepted_beta; 	/*counter for betaupdate acceptance rate*/	
+	int proposed_beta; //counter for betaupdate proposals
+   int *accepted_theta; 	/*counter for betaupdate acceptance rate*/	
+	int accepted_z; 	/*counter for zupdate acceptance rate*/	
+	int proposed_z;
+};
+
+void put_network(int *Y,struct network *nw);
+
+void put_latentpositions( double *z, struct network *nw );
+
+void put_covariates(double *x,struct network *nw);
+
+struct network *network_create( int n , int d, int p, int dir, int maxG, int initG, int modty );
+void network_destroy( struct network *nw );
+
+void network_initialize( struct network *nw, int *Y, double beta, double *theta, double *hyper_params, double sigmab, double sigmaz, double *sigmatheta, double *initialpositions, double *log_prior_groups );
+
+void dist_update( struct network *nw, int i );
+
+void  initresy(struct resy *presy, int ncovs);
+
+void zupdatemh(struct network *nw, struct resy * presy, int i,int itnum,int burnin,double c);
+
+void betaupdate(struct network *nw , struct resy * presy,int itnum,int burnin,double c);
+
+double get_eta( double b, int d, double *x_1, double *x_2 );
+
+double llike_node(struct network *nw,int i );
+
+double llike_full( struct network *nw );
+
+#endif

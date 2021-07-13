@@ -20,7 +20,7 @@ collpcm.summaryplot <- function( x )
 	
 	G <- x$Gpost[id,1]
 	
-	plot( x, G=G, vertex.cex=2 )
+	plot( x, G=G, pie=FALSE, vertex.cex=2 )
 	
 	par(mfrow=c(1,1))
 

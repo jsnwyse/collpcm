@@ -17,8 +17,8 @@ summary.collpcm <- function( object, ... )
 	
 	cat("\n\n")
 	
-	cat("Run times for various parts of analysis in seconds:")
-	cat("\n\tMCMC for samples : \t\t",round(x$timings$mcmc[3],digits=2),"\n\tPost-processing procedures:\n\tLabel switching : \t\t",round(x$timings$label.switching[3],digits=2),"\n\tProcrustes matching : \t\t",round(x$timings$procrustes[3],digits=2))
+	cat("Run times for various parts of analysis in seconds")
+	cat("\n\tMCMC for samples : \t\t",round(x$timings$mcmc[3],digits=2),"\n\tPost-processing procedures\n\tLabel switching : \t\t",round(x$timings$label.switching[3],digits=2),"\n\tProcrustes matching : \t\t",round(x$timings$procrustes[3],digits=2))
 	cat("\n")
 }
 

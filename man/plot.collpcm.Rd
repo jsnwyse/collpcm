@@ -6,7 +6,7 @@
 }
 
 \usage{
-\method{plot}{collpcm}( x, ..., G = NULL, label.nodes = NULL, pie = FALSE, 
+\method{plot}{collpcm}( x, ..., G = NULL, label.nodes = NULL, pie = TRUE, 
 
 vertex.col = c( "red", "green", "blue", "cyan", "magenta", "orange", "yellow", "purple"), 
 
@@ -25,7 +25,7 @@ vertex.cex = 1, object.scale = formals(plot.network.default)[["object.scale"]] )
 }
 
 \details{
-This function gives a plot of the latent positions for a given number of groups (assuming the model with the specified number of groups has been visited during the run of the sampler). Membership probabilities of the nodes are indicated by pie charts with each colour corresponding to a different group in the model. Some of the code to implement this function draws heavily on code contained in the \code{latentnet} package (Krivitsky & Handcock, 2015).
+This function gives a plot of the latent positions for a given number of groups (assuming the model with the specified number of groups has been visited during the run of the sampler). If argument \code{pie} is set to \code{TRUE}, membership probabilities of the nodes are indicated by pie charts with each colour corresponding to a different group in the model. Some of the code to implement this function draws heavily on code contained in the \code{latentnet} package (Krivitsky & Handcock, 2015).
 }
 
 \author{
@@ -35,9 +35,9 @@ Jason Wyse
 
 \references{
  
- Ryan, C., Wyse, J. and Friel, N. (2016).
+ Ryan, C., Wyse, J. and Friel, N. (2017).
  \emph{Bayesian model selection for the latent position cluster model for Social Networks.} 
- Network Science (accepted).
+ Network Science, volume 5, 70-91.
 
 Krivitsky P and Handcock M (2015). latentnet: Latent Position and Cluster Models for Statistical Networks. The Statnet Project (http://www.statnet.org). R package version 2.7.1, http://CRAN.R-project.org/package=latentnet. 
  

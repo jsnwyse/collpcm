@@ -1,0 +1,39 @@
+citHeader("To cite collpcm in publications use:")
+
+citEntry(entry = "Article",
+  title        = "Bayesian model selection for the latent position cluster model for Social Networks",
+  author       = personList(as.person("C. Ryan"),
+                   as.person("J. Wyse"), as.person("N. Friel")),
+  journal      = "Network Science",
+  year         = "2017",
+  volume       = "5",
+  number       = " ",
+  pages        = "70--91",
+  url          = "https://doi.org/10.1017/nws.2017.6",
+
+  textVersion  =
+  paste("Ryan, C., Wyse, J. and Friel, N. (2017).",
+        "Bayesian model selection for the latent position cluster model for Social Networks",
+        "Network Science, 5, 70-91.",
+        "URL: https://doi.org/10.1017/nws.2017.6")
+)
+
+citEntry(entry = "Manual",
+  title        = "collpcm: Bayesian model selection in latent position cluster models for networks",
+  author       = personList(as.person("J. Wyse"),
+                   as.person("C. Ryan"), as.person("N. Friel")),
+  note = paste("R package version ", "1.2", sep = ""), 
+  url          = "https://CRAN.R-project.org/package=collpcm",
+  year = "2021",
+
+  textVersion  =
+  paste("Wyse, J., Ryan, C.  and Friel, N. (2021).",
+        "collpcm: Bayesian model selection in latent position cluster models for networks",
+        "R package version 1.2",
+        "URL: https://CRAN.R-project.org/package=collpcm")
+)
+
+
+
+
+

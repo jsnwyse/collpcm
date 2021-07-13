@@ -18,9 +18,9 @@ Jason Wyse
 
 \references{
  
- Ryan, C., Wyse, J. and Friel N. (2016)
+ Ryan, C., Wyse, J. and Friel N. (2017)
  \emph{ Bayesian model selection for the latent position cluster model for Social Networks.} 
- Network Science (accepted).
+ Network Science, volume 5, 70-91.
  
 }
 
