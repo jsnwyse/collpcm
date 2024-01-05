@@ -26,7 +26,7 @@ collpcm.get.MKL.latent.positions <- function( nw, beta, latentpos )
 	
 	for( l in 1:sample )
 	{
-		if( d > 1 ) Xl <- latentpos[,,l] else Xl <- latentpos[,l]
+		Xl <- latentpos[,,l] #else Xl <- latentpos[,l]
  		eta <- beta[l] - as.matrix( dist(Xl) )
 		ExY <- ExY + 1 / ( 1 + exp(-eta) )
 	}
